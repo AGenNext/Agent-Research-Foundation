@@ -2,6 +2,8 @@ from pathlib import Path
 
 import typer
 
+from agent_research.dashboard import DashboardExporter
+from agent_research.core.regression import RegressionGate
 from agent_research.core.report import MarkdownReportGenerator
 from agent_research.core.runner import BenchmarkRunner
 
@@ -16,8 +18,9 @@ def run_benchmark(
     benchmark_dir: str,
     output: str = "outputs",
     repeats: int = 1,
+    agent: str = "echo",
 ):
-    runner = BenchmarkRunner()
+    runner = BenchmarkRunner(agent_name=agent)
 
     evaluations = runner.run_benchmark(benchmark_dir, repeats=repeats)
 
@@ -29,11 +32,45 @@ def run_benchmark(
     reporter = MarkdownReportGenerator()
     reporter.generate(summary, output)
 
+    dashboard = DashboardExporter()
+    dashboard.export_summary(summary, output)
+
     typer.echo("CLEARBench execution complete")
+    typer.echo(f"Agent: {agent}")
     typer.echo(f"Tasks: {summary.total_tasks}")
     typer.echo(f"Runs: {summary.total_runs}")
     typer.echo(f"Success Rate: {summary.success_rate:.2f}")
     typer.echo(f"CLEAR Score: {summary.clear_score:.2f}")
+
+
+@clear_app.command("compare")
+def compare_runs(baseline: str, candidate: str):
+    gate = RegressionGate()
+
+    result = gate.compare(baseline, candidate)
+
+    typer.echo("Comparison complete")
+    typer.echo(f"Baseline Success Rate: {result['baseline_success_rate']:.2f}")
+    typer.echo(f"Candidate Success Rate: {result['candidate_success_rate']:.2f}")
+    typer.echo(f"Delta: {result['delta']:.2f}")
+
+
+@clear_app.command("gate")
+def gate_run(
+    baseline: str,
+    candidate: str,
+    min_delta: float = 0.0,
+):
+    gate = RegressionGate()
+
+    result = gate.compare(baseline, candidate)
+
+    passed = result["delta"] >= min_delta
+
+    typer.echo(f"Gate Passed: {passed}")
+
+    if not passed:
+        raise typer.Exit(code=1)
 
 
 @clear_app.command("report")
@@ -48,6 +85,11 @@ def generate_report(output: str = "outputs"):
 
     if report_path.exists():
         typer.echo(f"Markdown report: {report_path}")
+
+    dashboard_path = path / "dashboard.json"
+
+    if dashboard_path.exists():
+        typer.echo(f"Dashboard export: {dashboard_path}")
 
     for file in files:
         typer.echo(file.name)
