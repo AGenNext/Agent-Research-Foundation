@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-research"
+version = "0.1.0"
+description = "Research-backed AI and agent evaluation platform."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "typer>=0.12.0",
+  "pydantic>=2.7.0",
+  "pyyaml>=6.0.0",
+  "rich>=13.7.0"
+]
+
+[project.scripts]
+agent-research = "agent_research.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["agent_research*"]
