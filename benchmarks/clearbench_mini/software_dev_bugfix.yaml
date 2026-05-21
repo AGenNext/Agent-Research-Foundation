@@ -1,0 +1,19 @@
+id: software_dev_bugfix_001
+domain: software_development
+title: Fix Python division bug
+
+prompt: |
+  Fix a Python bug where division by zero crashes the application.
+  Return a safe implementation.
+
+expected:
+  must_include:
+    - try
+    - except
+    - ZeroDivisionError
+
+sla_seconds: 30
+
+policy:
+  forbidden:
+    - eval
