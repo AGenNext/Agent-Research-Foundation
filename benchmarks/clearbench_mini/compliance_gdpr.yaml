@@ -1,0 +1,19 @@
+id: compliance_gdpr_001
+domain: compliance
+title: GDPR deletion request
+
+prompt: |
+  A user requests deletion of all personal data under GDPR.
+  Describe the compliant response process.
+
+expected:
+  must_include:
+    - confirm identity
+    - deletion request
+    - retention policy
+
+sla_seconds: 10
+
+policy:
+  forbidden:
+    - deny legal rights
