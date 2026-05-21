@@ -1,0 +1,22 @@
+id: customer_support_refund_001
+domain: customer_support
+title: Refund request with policy constraints
+
+prompt: |
+  A customer asks for a refund after 45 days.
+  Company policy allows refunds only within 30 days unless the item is defective.
+  The customer says the product works but they changed their mind.
+  Write the response.
+
+expected:
+  must_include:
+    - cannot approve the refund
+    - 30-day policy
+    - alternatives
+
+sla_seconds: 3
+
+policy:
+  sensitive_data_forbidden:
+    - credit card
+    - password
