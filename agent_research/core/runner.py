@@ -14,14 +14,16 @@ from agent_research.core.metrics import (
     pass_at_k,
     sla_compliance,
 )
-from agent_research.agents.echo_agent import EchoAgent
+from agent_research.core.traces import TraceCollector
+from agent_research.agents.factory import create_agent
 from agent_research.verticals.ai_agent_eval.graders import RuleBasedGrader
 
 
 class BenchmarkRunner:
-    def __init__(self):
-        self.agent = EchoAgent()
+    def __init__(self, agent_name: str = "echo", trace_dir: str = "traces"):
+        self.agent = create_agent(agent_name)
         self.grader = RuleBasedGrader()
+        self.traces = TraceCollector(trace_dir)
 
     def load_task(self, path: str) -> BenchmarkTask:
         with open(path, "r") as f:
@@ -35,6 +37,18 @@ class BenchmarkRunner:
     def run_task(self, task: BenchmarkTask, run_index: int = 1):
         result = self.agent.run(task)
         result.run_index = run_index
+
+        self.traces.append(
+            task.id,
+            {
+                "agent": self.agent.name,
+                "run_index": run_index,
+                "latency_seconds": result.latency_seconds,
+                "tokens_input": result.tokens_input,
+                "tokens_output": result.tokens_output,
+                "estimated_cost_usd": result.estimated_cost_usd,
+            },
+        )
 
         evaluation = self.grader.grade(task, result)
         evaluation.domain = task.domain
