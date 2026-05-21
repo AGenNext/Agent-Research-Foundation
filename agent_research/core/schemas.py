@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import Any, Dict, List, Optional
 
 
 class BenchmarkTask(BaseModel):
@@ -7,9 +7,14 @@ class BenchmarkTask(BaseModel):
     domain: str
     title: str
     prompt: str
-    expected: Dict
+    expected: Dict[str, Any] = {}
+    inputs: Dict[str, Any] = {}
+    policy: Dict[str, Any] = {}
+    grader: Dict[str, Any] = {"type": "rule_based"}
+    oracle: Dict[str, Any] = {"type": "rule_based"}
     sla_seconds: int = 5
-    policy: Dict = {}
+    repeats: int = 1
+    metadata: Dict[str, Any] = {}
 
 
 class AgentResult(BaseModel):
@@ -22,6 +27,14 @@ class AgentResult(BaseModel):
     run_index: int = 1
 
 
+class FinalVerdict(BaseModel):
+    task_id: str
+    passed: bool
+    score: float
+    reason: str
+    details: Dict[str, Any] = {}
+
+
 class EvaluationResult(BaseModel):
     task_id: str
     domain: str
@@ -32,6 +45,10 @@ class EvaluationResult(BaseModel):
     estimated_cost_usd: float
     reliability_pass: bool
     run_index: int = 1
+    input_ref: Optional[str] = None
+    output_ref: Optional[str] = None
+    grader_ref: Optional[str] = None
+    final_verdict_ref: Optional[str] = None
     violations: List[str] = []
 
 
