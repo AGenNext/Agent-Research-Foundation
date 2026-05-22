@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from uuid import uuid4
 
 import yaml
 
@@ -14,16 +15,30 @@ from agent_research.core.metrics import (
     pass_at_k,
     sla_compliance,
 )
+from agent_research.core.artifacts import ArtifactStore
+from agent_research.core.events import EvaluationEvent, EventType
+from agent_research.core.oracles import OracleFactory
+from agent_research.core.run_context import RunContext
 from agent_research.core.traces import TraceCollector
 from agent_research.agents.factory import create_agent
 from agent_research.verticals.ai_agent_eval.graders import RuleBasedGrader
 
 
 class BenchmarkRunner:
-    def __init__(self, agent_name: str = "echo", trace_dir: str = "traces"):
+    def __init__(
+        self,
+        agent_name: str = "echo",
+        trace_dir: str = "traces",
+        artifact_dir: str = "artifacts",
+    ):
         self.agent = create_agent(agent_name)
         self.grader = RuleBasedGrader()
         self.traces = TraceCollector(trace_dir)
+        self.artifacts = ArtifactStore(artifact_dir)
+        self.context = RunContext(agent_team_id=agent_name)
+
+    def emit(self, task_id: str, event: EvaluationEvent):
+        self.traces.append(task_id, event)
 
     def load_task(self, path: str) -> BenchmarkTask:
         with open(path, "r") as f:
@@ -35,24 +50,105 @@ class BenchmarkRunner:
         return [self.load_task(str(file)) for file in files]
 
     def run_task(self, task: BenchmarkTask, run_index: int = 1):
+        attempt_id = str(uuid4())
+
+        self.emit(
+            task.id,
+            EvaluationEvent(
+                event_type=EventType.TASK_STARTED,
+                run_id=self.context.run_id,
+                task_id=task.id,
+                attempt_id=attempt_id,
+                metadata={"run_index": run_index},
+            ),
+        )
+
+        prompt_ref = self.artifacts.write_text(task.prompt)
+
+        self.emit(
+            task.id,
+            EvaluationEvent(
+                event_type=EventType.AGENT_STARTED,
+                run_id=self.context.run_id,
+                task_id=task.id,
+                attempt_id=attempt_id,
+                agent_id=self.agent.name,
+                input_ref=prompt_ref,
+            ),
+        )
+
         result = self.agent.run(task)
         result.run_index = run_index
 
-        self.traces.append(
+        output_ref = self.artifacts.write_text(result.output)
+
+        self.emit(
             task.id,
-            {
-                "agent": self.agent.name,
-                "run_index": run_index,
-                "latency_seconds": result.latency_seconds,
-                "tokens_input": result.tokens_input,
-                "tokens_output": result.tokens_output,
-                "estimated_cost_usd": result.estimated_cost_usd,
-            },
+            EvaluationEvent(
+                event_type=EventType.AGENT_COMPLETED,
+                run_id=self.context.run_id,
+                task_id=task.id,
+                attempt_id=attempt_id,
+                agent_id=self.agent.name,
+                output_ref=output_ref,
+                latency_ms=result.latency_seconds * 1000,
+                cost_usd=result.estimated_cost_usd,
+                tokens_input=result.tokens_input,
+                tokens_output=result.tokens_output,
+            ),
+        )
+
+        self.emit(
+            task.id,
+            EvaluationEvent(
+                event_type=EventType.GRADER_STARTED,
+                run_id=self.context.run_id,
+                task_id=task.id,
+                attempt_id=attempt_id,
+            ),
         )
 
         evaluation = self.grader.grade(task, result)
         evaluation.domain = task.domain
         evaluation.run_index = run_index
+        evaluation.input_ref = prompt_ref
+        evaluation.output_ref = output_ref
+
+        grader_ref = self.artifacts.write_json(evaluation.model_dump())
+        evaluation.grader_ref = grader_ref
+
+        self.emit(
+            task.id,
+            EvaluationEvent(
+                event_type=EventType.GRADER_COMPLETED,
+                run_id=self.context.run_id,
+                task_id=task.id,
+                attempt_id=attempt_id,
+                value_ref=grader_ref,
+                score=evaluation.efficacy_score,
+                passed=evaluation.success,
+            ),
+        )
+
+        oracle = OracleFactory.create(task.oracle)
+        verdict = oracle.evaluate(task, result)
+
+        verdict_ref = self.artifacts.write_json(verdict.model_dump())
+        evaluation.final_verdict_ref = verdict_ref
+
+        self.emit(
+            task.id,
+            EvaluationEvent(
+                event_type=EventType.TASK_COMPLETED,
+                run_id=self.context.run_id,
+                task_id=task.id,
+                attempt_id=attempt_id,
+                value_ref=verdict_ref,
+                score=verdict.score,
+                passed=verdict.passed,
+                metadata={"reason": verdict.reason},
+            ),
+        )
 
         return result, evaluation
 
@@ -61,10 +157,31 @@ class BenchmarkRunner:
 
         evaluations = []
 
+        self.emit(
+            "benchmark",
+            EvaluationEvent(
+                event_type=EventType.RUN_STARTED,
+                run_id=self.context.run_id,
+                metadata={
+                    "benchmark_dir": benchmark_dir,
+                    "repeats": repeats,
+                },
+            ),
+        )
+
         for task in tasks:
             for run_idx in range(repeats):
                 _, evaluation = self.run_task(task, run_idx + 1)
                 evaluations.append(evaluation)
+
+        self.emit(
+            "benchmark",
+            EvaluationEvent(
+                event_type=EventType.RUN_COMPLETED,
+                run_id=self.context.run_id,
+                metadata={"total_evaluations": len(evaluations)},
+            ),
+        )
 
         return evaluations
 
