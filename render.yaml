@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: clearbench-backend
+    env: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /health
