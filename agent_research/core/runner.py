@@ -7,6 +7,7 @@ import yaml
 from agent_research.core.schemas import (
     BenchmarkTask,
     BenchmarkSummary,
+    FinalVerdict,
 )
 from agent_research.core.metrics import (
     clear_score,
@@ -48,6 +49,44 @@ class BenchmarkRunner:
     def load_tasks_from_directory(self, directory: str):
         files = Path(directory).glob("*.yaml")
         return [self.load_task(str(file)) for file in files]
+
+    def evaluate_with_oracle(self, task: BenchmarkTask, result, attempt_id: str):
+        oracle = OracleFactory.create(task.oracle)
+
+        try:
+            if task.oracle.get("type") == "execution":
+                return oracle.evaluate(
+                    task=task,
+                    patch_text=result.output,
+                    emit_event=self.emit,
+                    run_id=self.context.run_id,
+                    task_id=task.id,
+                )
+
+            return oracle.evaluate(task, result)
+
+        except Exception as exc:
+            self.emit(
+                task.id,
+                EvaluationEvent(
+                    event_type=EventType.ERROR,
+                    run_id=self.context.run_id,
+                    task_id=task.id,
+                    attempt_id=attempt_id,
+                    metadata={
+                        "phase": "oracle_evaluation",
+                        "error": str(exc),
+                    },
+                ),
+            )
+
+            return FinalVerdict(
+                task_id=task.id,
+                passed=False,
+                score=0.0,
+                reason="oracle error",
+                details={"error": str(exc)},
+            )
 
     def run_task(self, task: BenchmarkTask, run_index: int = 1):
         attempt_id = str(uuid4())
@@ -130,11 +169,13 @@ class BenchmarkRunner:
             ),
         )
 
-        oracle = OracleFactory.create(task.oracle)
-        verdict = oracle.evaluate(task, result)
+        verdict = self.evaluate_with_oracle(task, result, attempt_id)
 
         verdict_ref = self.artifacts.write_json(verdict.model_dump())
         evaluation.final_verdict_ref = verdict_ref
+        evaluation.success = verdict.passed
+        evaluation.efficacy_score = verdict.score
+        evaluation.reliability_pass = verdict.passed
 
         self.emit(
             task.id,
