@@ -92,6 +92,10 @@ agent-research clear run benchmarks/clearbench_mini --agent echo --repeats 3 --o
 agent-research clear report outputs/clearbench-mini-echo
 ```
 
+## UI Deployment
+
+The CLEARBench UI lives in `ui/` and is deployed with GitHub Pages using the repository workflow in `.github/workflows/pages.yml`.
+
 ## Repository Boundary
 
 ```text
