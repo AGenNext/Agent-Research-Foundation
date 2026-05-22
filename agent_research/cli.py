@@ -6,6 +6,7 @@ from agent_research.dashboard import DashboardExporter
 from agent_research.core.regression import RegressionGate
 from agent_research.core.report import MarkdownReportGenerator
 from agent_research.core.runner import BenchmarkRunner
+from agent_research.core.summary import SummaryWriter
 
 app = typer.Typer()
 clear_app = typer.Typer()
@@ -35,7 +36,21 @@ def run_benchmark(
     dashboard = DashboardExporter()
     dashboard.export_summary(summary, output)
 
+    summary_writer = SummaryWriter()
+    summary_writer.write(
+        output,
+        {
+            "run_id": runner.context.run_id,
+            "agent_team_id": runner.context.agent_team_id,
+            "benchmark_dir": benchmark_dir,
+            "repeats": repeats,
+            "summary": summary.model_dump(),
+            "evaluations": [e.model_dump() for e in evaluations],
+        },
+    )
+
     typer.echo("CLEARBench execution complete")
+    typer.echo(f"Run ID: {runner.context.run_id}")
     typer.echo(f"Agent: {agent}")
     typer.echo(f"Tasks: {summary.total_tasks}")
     typer.echo(f"Runs: {summary.total_runs}")
@@ -90,6 +105,11 @@ def generate_report(output: str = "outputs"):
 
     if dashboard_path.exists():
         typer.echo(f"Dashboard export: {dashboard_path}")
+
+    summary_path = path / "summary.json"
+
+    if summary_path.exists():
+        typer.echo(f"Summary artifact: {summary_path}")
 
     for file in files:
         typer.echo(file.name)
