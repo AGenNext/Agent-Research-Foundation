@@ -10,6 +10,27 @@ class ExecutionOracle:
         self.patch_applier = PatchApplier()
         self.runner = DockerSandboxRunner()
 
+    def validate_task(self, task: BenchmarkTask) -> FinalVerdict | None:
+        if not task.repo:
+            return FinalVerdict(
+                task_id=task.id,
+                passed=False,
+                score=0.0,
+                reason="missing repo for execution oracle",
+                details={},
+            )
+
+        if not task.test_command:
+            return FinalVerdict(
+                task_id=task.id,
+                passed=False,
+                score=0.0,
+                reason="missing test_command for execution oracle",
+                details={},
+            )
+
+        return None
+
     def evaluate(
         self,
         task: BenchmarkTask,
@@ -18,11 +39,51 @@ class ExecutionOracle:
         run_id: str,
         task_id: str,
     ) -> FinalVerdict:
-        workspace = self.workspace_manager.prepare(
-            repo=task.repo,
-            task_id=task.id,
-            base_commit=task.base_commit,
-        )
+        validation_error = self.validate_task(task)
+
+        if validation_error:
+            emit_event(
+                task.id,
+                EvaluationEvent(
+                    event_type=EventType.ERROR,
+                    run_id=run_id,
+                    task_id=task_id,
+                    metadata={
+                        "phase": "execution_oracle_validation",
+                        "reason": validation_error.reason,
+                    },
+                ),
+            )
+
+            return validation_error
+
+        try:
+            workspace = self.workspace_manager.prepare(
+                repo=task.repo,
+                task_id=task.id,
+                base_commit=task.base_commit,
+            )
+        except Exception as exc:
+            emit_event(
+                task.id,
+                EvaluationEvent(
+                    event_type=EventType.ERROR,
+                    run_id=run_id,
+                    task_id=task_id,
+                    metadata={
+                        "phase": "workspace_prepare",
+                        "error": str(exc),
+                    },
+                ),
+            )
+
+            return FinalVerdict(
+                task_id=task.id,
+                passed=False,
+                score=0.0,
+                reason="workspace preparation failed",
+                details={"error": str(exc)},
+            )
 
         emit_event(
             task.id,
@@ -30,10 +91,7 @@ class ExecutionOracle:
                 event_type=EventType.TOOL_CALLED,
                 run_id=run_id,
                 task_id=task_id,
-                metadata={
-                    "tool": "patch_apply",
-                    "workspace": str(workspace),
-                },
+                metadata={"tool": "patch_apply", "workspace": str(workspace)},
             ),
         )
 
@@ -53,6 +111,7 @@ class ExecutionOracle:
                     "tool": "patch_apply",
                     "stdout": patch_result.stdout[-2000:],
                     "stderr": patch_result.stderr[-2000:],
+                    "returncode": patch_result.returncode,
                 },
             ),
         )
@@ -63,9 +122,7 @@ class ExecutionOracle:
                 passed=False,
                 score=0.0,
                 reason="patch apply failed",
-                details={
-                    "stderr": patch_result.stderr,
-                },
+                details={"stderr": patch_result.stderr, "returncode": patch_result.returncode},
             )
 
         emit_event(
@@ -74,18 +131,37 @@ class ExecutionOracle:
                 event_type=EventType.TOOL_CALLED,
                 run_id=run_id,
                 task_id=task_id,
-                metadata={
-                    "tool": "docker_test_execution",
-                    "command": task.test_command,
-                },
+                metadata={"tool": "docker_test_execution", "command": task.test_command},
             ),
         )
 
-        execution_result = self.runner.run_command(
-            command=task.test_command,
-            workspace=str(workspace),
-            image=task.docker_image,
-        )
+        try:
+            execution_result = self.runner.run_command(
+                command=task.test_command,
+                workspace=str(workspace),
+                image=task.docker_image,
+            )
+        except Exception as exc:
+            emit_event(
+                task.id,
+                EvaluationEvent(
+                    event_type=EventType.ERROR,
+                    run_id=run_id,
+                    task_id=task_id,
+                    metadata={
+                        "phase": "docker_test_execution",
+                        "error": str(exc),
+                    },
+                ),
+            )
+
+            return FinalVerdict(
+                task_id=task.id,
+                passed=False,
+                score=0.0,
+                reason="test execution failed",
+                details={"error": str(exc)},
+            )
 
         passed = execution_result.returncode == 0
 
