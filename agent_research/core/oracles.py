@@ -1,3 +1,5 @@
+import subprocess
+
 from agent_research.core.schemas import BenchmarkTask, AgentResult, FinalVerdict
 
 
@@ -18,6 +20,44 @@ class RuleBasedOracle:
         )
 
 
+class CommandOracle:
+    def evaluate(self, task: BenchmarkTask, result: AgentResult) -> FinalVerdict:
+        command = task.oracle.get("command")
+        timeout = task.oracle.get("timeout_seconds", 30)
+
+        if not command:
+            return FinalVerdict(
+                task_id=task.id,
+                passed=False,
+                score=0.0,
+                reason="missing oracle command",
+                details={},
+            )
+
+        completed = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+
+        passed = completed.returncode == 0
+
+        return FinalVerdict(
+            task_id=task.id,
+            passed=passed,
+            score=1.0 if passed else 0.0,
+            reason="command passed" if passed else "command failed",
+            details={
+                "command": command,
+                "returncode": completed.returncode,
+                "stdout": completed.stdout[-4000:],
+                "stderr": completed.stderr[-4000:],
+            },
+        )
+
+
 class OracleFactory:
     @staticmethod
     def create(config: dict):
@@ -25,5 +65,8 @@ class OracleFactory:
 
         if oracle_type == "rule_based":
             return RuleBasedOracle()
+
+        if oracle_type == "command":
+            return CommandOracle()
 
         raise ValueError(f"Unsupported oracle type: {oracle_type}")
