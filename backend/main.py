@@ -1,11 +1,19 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "*").split(",")
+    if origin.strip()
+]
 
 app = FastAPI(title="CLEARBench Backend", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,12 +51,13 @@ def root():
     return {
         "name": "CLEARBench Backend",
         "status": "ok",
-        "version": "0.1.0"
+        "version": "0.1.0",
+        "environment": ENVIRONMENT
     }
 
 @app.get("/health")
 def health():
-    return {"status": "healthy"}
+    return {"status": "healthy", "environment": ENVIRONMENT}
 
 @app.get("/api/demo")
 def demo_data():
