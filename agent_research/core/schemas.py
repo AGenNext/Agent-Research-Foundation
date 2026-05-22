@@ -7,13 +7,24 @@ class BenchmarkTask(BaseModel):
     domain: str
     title: str
     prompt: str
+
     expected: Dict[str, Any] = {}
     inputs: Dict[str, Any] = {}
     policy: Dict[str, Any] = {}
+
     grader: Dict[str, Any] = {"type": "rule_based"}
     oracle: Dict[str, Any] = {"type": "rule_based"}
+
     sla_seconds: int = 5
     repeats: int = 1
+
+    repo: Optional[str] = None
+    base_commit: Optional[str] = None
+    docker_image: str = "python:3.11-slim"
+    workspace: str = "."
+    test_command: Optional[str] = None
+
+    allowed_tools: List[str] = []
     metadata: Dict[str, Any] = {}
 
 
