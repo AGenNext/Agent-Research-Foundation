@@ -1,5 +1,6 @@
 import subprocess
 
+from agent_research.core.execution_oracle import ExecutionOracle
 from agent_research.core.schemas import BenchmarkTask, AgentResult, FinalVerdict
 
 
@@ -68,5 +69,8 @@ class OracleFactory:
 
         if oracle_type == "command":
             return CommandOracle()
+
+        if oracle_type == "execution":
+            return ExecutionOracle()
 
         raise ValueError(f"Unsupported oracle type: {oracle_type}")
