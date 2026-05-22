@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -7,58 +7,64 @@ import ReactFlow, {
   Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { agentNodes, handoffs, loops, taskScores, executionLogs } from './sampleData';
+import * as sampleData from './sampleData';
 
-const nodes: Node[] = agentNodes.map((agent, index) => ({
-  id: agent.id,
-  position: { x: 120 + index * 260, y: agent.weakLink ? 260 : 120 },
-  data: {
-    label: `${agent.label}\nScore: ${agent.score} • Trust: ${agent.trustScore}\nCost: $${agent.costUsd} • ${agent.latencySeconds}s\nTokens: ${agent.tokens}\n${agent.weakLink ? 'WEAK LINK' : agent.status}`,
-    kind: 'agent',
-    ...agent,
-  },
-  style: {
-    border: agent.weakLink ? '3px solid #ef4444' : '2px solid #22c55e',
-    padding: 12,
-    borderRadius: 10,
-    whiteSpace: 'pre-line',
-    background: agent.weakLink ? '#fef2f2' : '#f0fdf4',
-    minWidth: 220,
-  },
-}));
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-const handoffEdges: Edge[] = handoffs.map((handoff) => ({
-  id: handoff.id,
-  source: handoff.source,
-  target: handoff.target,
-  label: `${handoff.label} • score ${handoff.score}`,
-  data: { kind: 'handoff', ...handoff },
-}));
+type ClearBenchData = typeof sampleData;
 
-const loopEdges: Edge[] = loops.map((loop) => ({
-  id: loop.id,
-  source: loop.source,
-  target: loop.target,
-  label: `↺ ${loop.iterations}x • ${loop.label}`,
-  animated: true,
-  style: {
-    stroke: loop.improvedScore ? '#f59e0b' : '#ef4444',
-    strokeWidth: 3,
-  },
-  data: { kind: 'loop', ...loop },
-}));
+function buildFlow(data: ClearBenchData) {
+  const nodes: Node[] = data.agentNodes.map((agent: any, index: number) => ({
+    id: agent.id,
+    position: { x: 120 + index * 260, y: agent.weakLink ? 260 : 120 },
+    data: {
+      label: `${agent.label}\nScore: ${agent.score} • Trust: ${agent.trustScore}\nCost: $${agent.costUsd ?? 0} • ${agent.latencySeconds ?? 0}s\nTokens: ${agent.tokens ?? 0}\n${agent.weakLink ? 'WEAK LINK' : agent.status}`,
+      kind: 'agent',
+      ...agent,
+    },
+    style: {
+      border: agent.weakLink ? '3px solid #ef4444' : '2px solid #22c55e',
+      padding: 12,
+      borderRadius: 10,
+      whiteSpace: 'pre-line',
+      background: agent.weakLink ? '#fef2f2' : '#f0fdf4',
+      minWidth: 220,
+    },
+  }));
 
-const edges: Edge[] = [...handoffEdges, ...loopEdges];
+  const handoffEdges: Edge[] = data.handoffs.map((handoff: any) => ({
+    id: handoff.id,
+    source: handoff.source,
+    target: handoff.target,
+    label: `${handoff.label} • score ${handoff.score}`,
+    data: { kind: 'handoff', ...handoff },
+  }));
 
-function resolveTarget(log: any) {
-  return (
-    nodes.find((node) => node.id === log.targetId)?.data ||
-    edges.find((edge) => edge.id === log.targetId)?.data ||
-    null
-  );
+  const loopEdges: Edge[] = data.loops.map((loop: any) => ({
+    id: loop.id,
+    source: loop.source,
+    target: loop.target,
+    label: `↺ ${loop.iterations}x • ${loop.label}`,
+    animated: true,
+    style: {
+      stroke: loop.improvedScore ? '#f59e0b' : '#ef4444',
+      strokeWidth: 3,
+    },
+    data: { kind: 'loop', ...loop },
+  }));
+
+  return { nodes, edges: [...handoffEdges, ...loopEdges] };
 }
 
-function DetailPanel({ selected }: { selected: any }) {
+function DetailPanel({ selected, data, nodes, edges }: { selected: any; data: ClearBenchData; nodes: Node[]; edges: Edge[] }) {
+  function resolveTarget(log: any) {
+    return (
+      nodes.find((node) => node.id === log.targetId)?.data ||
+      edges.find((edge) => edge.id === log.targetId)?.data ||
+      null
+    );
+  }
+
   if (!selected) {
     return (
       <aside style={panelStyle}>
@@ -88,14 +94,14 @@ function DetailPanel({ selected }: { selected: any }) {
           <p><strong>Role:</strong> {target.role}</p>
           <p><strong>Trust:</strong> {target.trustScore}</p>
           <p><strong>Score:</strong> {target.score}</p>
-          <p><strong>Cost:</strong> ${target.costUsd}</p>
-          <p><strong>Latency:</strong> {target.latencySeconds}s</p>
-          <p><strong>Tokens:</strong> {target.tokens}</p>
+          <p><strong>Cost:</strong> ${target.costUsd ?? 0}</p>
+          <p><strong>Latency:</strong> {target.latencySeconds ?? 0}s</p>
+          <p><strong>Tokens:</strong> {target.tokens ?? 0}</p>
           <p><strong>Weak Link:</strong> {String(target.weakLink)}</p>
           <p><strong>Input:</strong> {target.lastInput}</p>
           <p><strong>Output:</strong> {target.lastOutput}</p>
           <h3>Task Scores</h3>
-          {taskScores.filter((score) => score.agent === target.id).map((score) => (
+          {data.taskScores.filter((score: any) => score.agent === target.id).map((score: any) => (
             <div key={`${score.taskId}-${score.agent}`} style={cardStyle}>
               <div><strong>Task:</strong> {score.taskId}</div>
               <div><strong>Score:</strong> {score.score}</div>
@@ -131,7 +137,7 @@ function DetailPanel({ selected }: { selected: any }) {
   );
 }
 
-function LogsTable({ onSelectLog }: { onSelectLog: (log: any) => void }) {
+function LogsTable({ logs, onSelectLog }: { logs: any[]; onSelectLog: (log: any) => void }) {
   return (
     <div style={logsStyle}>
       <h3>Execution Logs</h3>
@@ -145,7 +151,7 @@ function LogsTable({ onSelectLog }: { onSelectLog: (log: any) => void }) {
           </tr>
         </thead>
         <tbody>
-          {executionLogs.map((log) => (
+          {logs.map((log) => (
             <tr key={log.id} onClick={() => onSelectLog(log)} style={{ cursor: 'pointer' }}>
               <td style={tdStyle}>{log.time}</td>
               <td style={tdStyle}>{log.type}</td>
@@ -167,16 +173,38 @@ const tdStyle: React.CSSProperties = { borderBottom: '1px solid #f3f4f6', paddin
 
 export default function App() {
   const [selected, setSelected] = useState<any>(null);
-  const flowNodes = useMemo(() => nodes, []);
-  const flowEdges = useMemo(() => edges, []);
+  const [data, setData] = useState<ClearBenchData>(sampleData);
+  const [source, setSource] = useState('local sample data');
+
+  useEffect(() => {
+    if (!API_BASE_URL) return;
+
+    fetch(`${API_BASE_URL}/api/demo`)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Backend returned ${response.status}`);
+        return response.json();
+      })
+      .then((backendData) => {
+        setData({ ...sampleData, ...backendData });
+        setSource('backend API');
+      })
+      .catch(() => {
+        setSource('local sample data');
+      });
+  }, []);
+
+  const { nodes, edges } = useMemo(() => buildFlow(data), [data]);
 
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '8px 16px', borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
+          Data source: <strong>{source}</strong>
+        </div>
         <div style={{ flex: 1 }}>
           <ReactFlow
-            nodes={flowNodes}
-            edges={flowEdges}
+            nodes={nodes}
+            edges={edges}
             fitView
             onNodeClick={(_, node) => setSelected(node.data)}
             onEdgeClick={(_, edge) => setSelected(edge.data)}
@@ -186,9 +214,9 @@ export default function App() {
             <Controls />
           </ReactFlow>
         </div>
-        <LogsTable onSelectLog={(log) => setSelected({ event: log })} />
+        <LogsTable logs={data.executionLogs} onSelectLog={(log) => setSelected({ event: log })} />
       </div>
-      <DetailPanel selected={selected} />
+      <DetailPanel selected={selected} data={data} nodes={nodes} edges={edges} />
     </div>
   );
 }
