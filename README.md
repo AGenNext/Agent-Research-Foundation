@@ -1,31 +1,39 @@
-# Agent Research
+# Agent Research Foundation
 
-Agent Research defines reusable research intelligence contracts for AGenNext agentic systems.
+**Open research, education, and awareness foundation for responsible agent systems.**
+
+Agent Research Foundation is the canonical non-commercial AGenNext initiative for open agent research, education, awareness, standards, and responsible adoption.
+
+It helps communities, builders, researchers, and enterprises understand, evaluate, and govern agent systems with evidence, provenance, and reproducible artifacts.
 
 ## Responsibility
 
-Agent Research owns research collection, evidence tracking, and research-to-decision workflows.
+Agent Research Foundation owns open research collection, evidence tracking, evaluation education, and research-to-decision workflows for agent systems.
 
-It helps agents ground product, technical, market, and architecture decisions in evidence.
+It helps ground product, technical, market, architecture, governance, and adoption decisions in verifiable evidence.
 
 ## Scope
 
-Agent Research covers:
+Agent Research Foundation covers:
 
+- open agent research
+- agent education and awareness
 - academic research tracking
-- arXiv/paper evidence
+- arXiv and paper evidence
 - market research
 - competitor research
 - technical due diligence
-- tool/library research
+- tool and library research
 - license and ecosystem research
 - research freshness checks
 - research-to-decision traceability
 - AI and agent evaluation research
+- responsible agent adoption
+- agent identity, governance, and operating model research
 
 ## First Concrete Vertical: CLEARBench
 
-CLEARBench is the first implementation vertical inside Agent Research.
+CLEARBench is the first implementation vertical inside Agent Research Foundation.
 
 It is inspired by the CLEAR framework from *Beyond Accuracy: A Multi-Dimensional Framework for Evaluating Enterprise Agentic AI Systems*.
 
@@ -48,6 +56,7 @@ The goal is to move beyond accuracy-only benchmarks and produce reproducible eva
 - Agent-Bench
 - Model-Router
 - future AGenNext products
+- open community education and awareness programs
 
 ## Core Principle
 
@@ -56,6 +65,7 @@ No strategic decision without evidence.
 No evidence without source.
 No source without freshness and provenance.
 No evaluation without reproducible artifacts.
+No adoption without education, governance, and responsibility.
 ```
 
 ## Research Loop
@@ -99,8 +109,8 @@ The CLEARBench UI lives in `ui/` and is deployed with GitHub Pages using the rep
 ## Repository Boundary
 
 ```text
-Agent-Research
-  → evidence gathering, research contracts, and research-backed evaluation verticals
+Agent-Research-Foundation
+  → open research, education, awareness, and research-backed evaluation verticals
 
 Agent-Trust
   → provenance and trust scoring
