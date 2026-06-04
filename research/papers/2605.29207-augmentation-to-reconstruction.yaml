@@ -1,0 +1,63 @@
+# Structured research entry conforming to contracts/research-contract.md
+research_id: paper-2605.29207-augmentation-to-reconstruction
+category: academic
+question: >-
+  Why has the expected AI disruption not yet fully arrived, and what institutional
+  conditions determine whether it produces broad welfare gains versus hardening
+  today's market structures into automated versions of the status quo?
+scope: >-
+  Perspective paper proposing a three-stage lens (Augmentation, Automation,
+  Reconstruction) for AI integration, illustrated across shopping, education, news,
+  and coding, with a normative argument for steering the agentic economy toward open,
+  auditable, welfare-improving designs.
+sources:
+  - id: arxiv-2605.29207
+    title: >-
+      From Augmentation to Reconstruction: Guiding the AI Disruption to the Good Place
+    authors:
+      - David M. Rothschild
+      - Jake M. Hofman
+      - Markus Mobius
+      - Brendan Lucier
+      - Eleanor Dillon
+      - Daniel G. Goldstein
+      - Nicole Immorlica
+      - Aleksandrs Slivkins
+    affiliation: Microsoft Research
+    identifier: arXiv:2605.29207v1
+    primary_class: econ.GN
+    dated: 2026-05-28
+    contact: David@ResearchDMR.com
+    type: primary
+source_freshness_requirements:
+  - "Re-check arXiv for a v2 or peer-reviewed/published version."
+  - "Track companion works: The Agentic Economy (CACM 2026); Demirer et al. (NBER 2026)."
+trust_refs:
+  - "Primary source: author preprint."
+  - "Not yet peer reviewed; partly self-citing the same research group."
+options_considered:
+  - "Stage 1 Augmentation: AI enhances discrete human tasks; gains local, bottlenecks shift."
+  - "Stage 2 Automation: routine tasks delegated under the hood; transitional, suboptimal equilibrium."
+  - "Stage 3 Reconstruction: workflows redesigned around AI strengths; locus of real disruption."
+recommendation: >-
+  Treat Stage 3 (advanced agentic coordination) as an organizational capability built
+  over time, not a feature to buy. Concretely: invest in machine-readable, interoperable
+  data and interfaces for agent-to-agent interaction; redesign workflows to be AI-native
+  rather than layering automation onto legacy processes; and define explicit delegation
+  boundaries and accountability structures for agent-driven decisions.
+assumptions:
+  - "Model and tool capability are no longer the primary binding constraint."
+  - "Competitive pressure will eventually force reconstruction on incumbents."
+risks:
+  - "Default incentives produce walled gardens that preserve friction and concentrate surplus."
+  - "Prolonged Stage 2 accrues organizational debt, raising later reconstruction cost."
+  - "Lock-in may become irreversible before open, auditable designs are established."
+limitations:
+  - "Conceptual perspective, not an empirical study; no new measurements."
+  - "Stages are conceptual, not chronological; firms occupy several simultaneously."
+  - "J-curve vs hockey-stick productivity pattern is explicitly left uncertain."
+decision_refs:
+  - >-
+    Informs CLEARBench evaluation priorities: Assurance (auditable constraints, trust
+    infrastructure) and Reliability (repeated-run / pass@k execution) dimensions, plus
+    motivation for multi-agent (agent-to-agent) evaluation beyond single-agent tasks.
