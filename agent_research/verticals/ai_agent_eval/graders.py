@@ -29,6 +29,7 @@ class RuleBasedGrader:
 
         return EvaluationResult(
             task_id=task.id,
+            domain=task.domain,
             success=success,
             efficacy_score=efficacy_score,
             policy_adherence_score=policy_score,

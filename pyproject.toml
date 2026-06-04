@@ -20,3 +20,9 @@ agent-research = "agent_research.cli:app"
 
 [tool.setuptools.packages.find]
 include = ["agent_research*"]
+
+[tool.pytest.ini_options]
+# Scope collection to the package test suite. The backend FastAPI app has its
+# own deps (installed in the CI `backend` job) and is tested separately, so it
+# must not be collected by the root `tests` workflow.
+testpaths = ["tests"]
