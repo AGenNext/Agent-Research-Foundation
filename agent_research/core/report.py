@@ -20,7 +20,9 @@ class MarkdownReportGenerator:
 - Mean Latency (s): {summary.mean_latency_seconds:.4f}
 - P95 Latency (s): {summary.p95_latency_seconds:.4f}
 - SLA Compliance: {summary.sla_compliance_rate:.2f}
-- pass@k Reliability: {summary.pass_at_k:.2f}
+- Mean Success (pass@k): {summary.pass_at_k:.2f}
+- pass@3 / pass@5 / pass@8: {summary.pass_at_3:.2f} / {summary.pass_at_5:.2f} / {summary.pass_at_8:.2f}
+- Success Variance: {summary.success_variance:.4f}
 - CLEAR Score: {summary.clear_score:.2f}
 '''
 

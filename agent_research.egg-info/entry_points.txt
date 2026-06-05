@@ -1,0 +1,2 @@
+[console_scripts]
+agent-research = agent_research.cli:app

@@ -100,16 +100,16 @@ same move for agents.
    `κ` factor: it discounts runs that "cross the bar" once but recross on repeat.
    Treat `κ` and repeated-run reliability as the same correction.
 
-   **Implementation note (do not over-claim).** As of this commit, CLEARBench's
-   Reliability is computed by `agent_research/core/metrics.py::pass_at_k`, which
-   returns the *mean success rate over repeated runs*
-   (`sum(results) / len(results)`); `build_summary` applies it to the flattened
-   run successes. It does **not** yet compute per-k pass@3/5/8, the standard
-   pass@k "at least one of k succeeds" estimator, or success **variance**. Those
-   richer estimators are **proposed** here as the natural way to make the `κ`
-   analogy quantitative — they are design input, not existing measurements. Any
-   downstream decision record citing pass@3/5/8 or variance must treat them as
-   proposed until the implementation is aligned.
+   **Implementation note.** The simple mean success rate over repeated runs
+   remains available as `agent_research/core/metrics.py::pass_at_k` and still
+   drives the composite `clear_score`. In addition, the unbiased pass@k
+   estimator ("at least one of k succeeds", Chen et al. HumanEval 2021),
+   per-task **pass@3/5/8**, and success **variance** are now computed by
+   `pass_at_k_estimate`, `pass_at_k_by_task`, and `reliability_metrics`, and
+   surfaced in `BenchmarkSummary` and the run report. `build_summary` groups
+   run successes by `task_id` before applying them, so pass@k reflects true
+   per-task reliability rather than a flattened average. The `κ` analogy is
+   therefore now backed by real measurements, not proposed ones.
 
 2. **Multiple channels need multiple coordinates.** CO oxidation could not be
    evaluated in isolation because CO desorption competes for the same adsorbate;
