@@ -96,9 +96,20 @@ same move for agents.
 1. **Reliability is a recrossing correction.** The paper's headline failure of
    transition-state theory — overcounting success by 20–100× because it ignores
    recrossing — is the chemistry statement of why single-run accuracy
-   overstates agent quality. CLEAR's Reliability dimension (pass@3/5/8, variance)
-   is the `κ` factor: it discounts runs that "cross the bar" once but recross on
-   repeat. Treat `κ` and `pass@k` as the same correction.
+   overstates agent quality. CLEAR's Reliability dimension plays the role of the
+   `κ` factor: it discounts runs that "cross the bar" once but recross on repeat.
+   Treat `κ` and repeated-run reliability as the same correction.
+
+   **Implementation note (do not over-claim).** As of this commit, CLEARBench's
+   Reliability is computed by `agent_research/core/metrics.py::pass_at_k`, which
+   returns the *mean success rate over repeated runs*
+   (`sum(results) / len(results)`); `build_summary` applies it to the flattened
+   run successes. It does **not** yet compute per-k pass@3/5/8, the standard
+   pass@k "at least one of k succeeds" estimator, or success **variance**. Those
+   richer estimators are **proposed** here as the natural way to make the `κ`
+   analogy quantitative — they are design input, not existing measurements. Any
+   downstream decision record citing pass@3/5/8 or variance must treat them as
+   proposed until the implementation is aligned.
 
 2. **Multiple channels need multiple coordinates.** CO oxidation could not be
    evaluated in isolation because CO desorption competes for the same adsorbate;
