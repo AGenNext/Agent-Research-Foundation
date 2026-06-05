@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/AGenNext/Agent-Research-Foundation/artifacts/reactive-flux-aware-surface-selection/surface_selection_schema.json",
+  "title": "Reactive Flux Aware Surface Selection Schema",
+  "type": "object",
+  "required": [
+    "model",
+    "version",
+    "reaction",
+    "surface",
+    "conditions",
+    "descriptors",
+    "dynamics",
+    "score",
+    "decision",
+    "provenance"
+  ],
+  "properties": {
+    "model": {
+      "type": "string",
+      "const": "ReactiveFluxAwareSurfaceSelection"
+    },
+    "version": {
+      "type": "string"
+    },
+    "reaction": {
+      "type": "object",
+      "required": ["id", "equation", "target_product"],
+      "properties": {
+        "id": { "type": "string" },
+        "equation": { "type": "string" },
+        "target_product": { "type": "string" },
+        "side_products": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "surface": {
+      "type": "object",
+      "required": ["id", "material", "facet"],
+      "properties": {
+        "id": { "type": "string" },
+        "material": { "type": "string" },
+        "facet": { "type": "string" },
+        "defects": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "alloy": { "type": ["string", "null"] },
+        "support": { "type": ["string", "null"] },
+        "preparation_method": { "type": ["string", "null"] }
+      }
+    },
+    "conditions": {
+      "type": "object",
+      "properties": {
+        "temperature_K": { "type": ["number", "null"] },
+        "pressure": { "type": "object" },
+        "coverage": { "type": "object" },
+        "flow_rate": { "type": ["number", "null"] },
+        "environment": { "type": ["string", "null"] }
+      }
+    },
+    "descriptors": {
+      "type": "object",
+      "properties": {
+        "adsorption_energy_CO_eV": { "type": ["number", "null"] },
+        "adsorption_energy_O_eV": { "type": ["number", "null"] },
+        "activation_barrier_eV": { "type": ["number", "null"] },
+        "reaction_free_energy_eV": { "type": ["number", "null"] },
+        "surface_energy_eV": { "type": ["number", "null"] },
+        "stability_score": { "type": ["number", "null"] },
+        "poisoning_risk": { "type": ["number", "null"] }
+      }
+    },
+    "dynamics": {
+      "type": "object",
+      "properties": {
+        "tst_rate_constant": { "type": ["number", "null"] },
+        "reactive_flux_rate_constant": { "type": ["number", "null"] },
+        "recrossing_factor": { "type": ["number", "null"] },
+        "reaction_channels": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "free_energy_surface_ref": { "type": ["string", "null"] },
+        "uncertainty": { "type": ["number", "null"] }
+      }
+    },
+    "score": {
+      "type": "object",
+      "properties": {
+        "activity": { "type": ["number", "null"] },
+        "selectivity": { "type": ["number", "null"] },
+        "stability": { "type": ["number", "null"] },
+        "low_poisoning": { "type": ["number", "null"] },
+        "low_recrossing_loss": { "type": ["number", "null"] },
+        "manufacturability": { "type": ["number", "null"] },
+        "cost": { "type": ["number", "null"] },
+        "total": { "type": ["number", "null"] }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["candidate", "rejected", "shortlisted", "selected"]
+        },
+        "rank": { "type": ["integer", "null"] },
+        "reason": { "type": ["string", "null"] },
+        "review_required": { "type": "boolean" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "method": { "type": "string" },
+        "dataset": { "type": ["string", "null"] },
+        "code_version": { "type": ["string", "null"] },
+        "model_version": { "type": ["string", "null"] },
+        "created_by": { "type": ["string", "null"] },
+        "created_at": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
