@@ -1,0 +1,24 @@
+{
+  "model": "ReactiveFluxAwareSurfaceSelection",
+  "version": "1.0.0",
+  "weights": {
+    "activity": 0.25,
+    "selectivity": 0.2,
+    "stability": 0.15,
+    "low_poisoning": 0.15,
+    "low_recrossing_loss": 0.1,
+    "manufacturability": 0.1,
+    "cost": 0.05
+  },
+  "rejection_gates": [
+    "adsorption_too_weak",
+    "adsorption_too_strong",
+    "unstable_surface",
+    "high_poisoning_risk",
+    "high_recrossing_loss",
+    "high_uncertainty",
+    "manufacturing_unrealistic",
+    "cost_exceeds_target"
+  ],
+  "decision_rule": "Rank only surfaces that pass all rejection gates. Select the highest total score under the defined reaction, operating condition, and candidate set."
+}
