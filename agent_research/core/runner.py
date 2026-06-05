@@ -14,6 +14,7 @@ from agent_research.core.metrics import (
     cost_per_success,
     p95,
     pass_at_k,
+    reliability_metrics,
     sla_compliance,
 )
 from agent_research.core.artifacts import ArtifactStore
@@ -239,6 +240,11 @@ class BenchmarkRunner:
         success_rate = sum(successes) / max(total_runs, 1)
         total_cost = sum(costs)
 
+        task_successes: dict[str, list[bool]] = {}
+        for e in evaluations:
+            task_successes.setdefault(e.task_id, []).append(e.success)
+        reliability = reliability_metrics(task_successes)
+
         summary = BenchmarkSummary(
             total_runs=total_runs,
             total_tasks=total_tasks,
@@ -251,6 +257,10 @@ class BenchmarkRunner:
             p95_latency_seconds=p95(latencies),
             sla_compliance_rate=sla_compliance(latencies, 3),
             pass_at_k=pass_at_k(successes),
+            pass_at_3=reliability["pass_at_3"],
+            pass_at_5=reliability["pass_at_5"],
+            pass_at_8=reliability["pass_at_8"],
+            success_variance=reliability["success_variance"],
             clear_score=clear_score(
                 cost_score=max(0.0, 1.0 - total_cost),
                 latency_score=max(0.0, 1.0 - (sum(latencies) / max(len(latencies), 1))),

@@ -75,4 +75,8 @@ class BenchmarkSummary(BaseModel):
     p95_latency_seconds: float
     sla_compliance_rate: float
     pass_at_k: float
+    pass_at_3: float = 0.0
+    pass_at_5: float = 0.0
+    pass_at_8: float = 0.0
+    success_variance: float = 0.0
     clear_score: float

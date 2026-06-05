@@ -1,0 +1,137 @@
+Metadata-Version: 2.4
+Name: agent-research
+Version: 0.1.0
+Summary: Research-backed AI and agent evaluation platform.
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: typer>=0.12.0
+Requires-Dist: pydantic>=2.7.0
+Requires-Dist: pyyaml>=6.0.0
+Requires-Dist: rich>=13.7.0
+
+# Agent Research Foundation
+
+**Open research, education, and awareness foundation for responsible agent systems.**
+
+Agent Research Foundation is the canonical non-commercial AGenNext initiative for open agent research, education, awareness, standards, and responsible adoption.
+
+It helps communities, builders, researchers, and enterprises understand, evaluate, and govern agent systems with evidence, provenance, and reproducible artifacts.
+
+## Responsibility
+
+Agent Research Foundation owns open research collection, evidence tracking, evaluation education, and research-to-decision workflows for agent systems.
+
+It helps ground product, technical, market, architecture, governance, and adoption decisions in verifiable evidence.
+
+## Scope
+
+Agent Research Foundation covers:
+
+- open agent research
+- agent education and awareness
+- academic research tracking
+- arXiv and paper evidence
+- market research
+- competitor research
+- technical due diligence
+- tool and library research
+- license and ecosystem research
+- research freshness checks
+- research-to-decision traceability
+- AI and agent evaluation research
+- responsible agent adoption
+- agent identity, governance, and operating model research
+
+## First Concrete Vertical: CLEARBench
+
+CLEARBench is the first implementation vertical inside Agent Research Foundation.
+
+It is inspired by the CLEAR framework from *Beyond Accuracy: A Multi-Dimensional Framework for Evaluating Enterprise Agentic AI Systems*.
+
+CLEAR evaluates agentic systems across five production dimensions:
+
+- **Cost**: token usage, estimated API cost, cost per success, cost-normalized accuracy
+- **Latency**: wall-clock execution time, p50/p95 latency, SLA compliance
+- **Efficacy**: task success and domain-specific grading
+- **Assurance**: safety, policy compliance, prompt-injection resistance, data-leak prevention
+- **Reliability**: repeated-run stability through pass@k-style measurements
+
+The goal is to move beyond accuracy-only benchmarks and produce reproducible evaluation artifacts for enterprise AI agents.
+
+## Consumers
+
+- Agent-Team
+- Agent-Knowledge
+- Agent-Blueprint
+- Agent-Eval
+- Agent-Bench
+- Model-Router
+- future AGenNext products
+- open community education and awareness programs
+
+## Core Principle
+
+```text
+No strategic decision without evidence.
+No evidence without source.
+No source without freshness and provenance.
+No evaluation without reproducible artifacts.
+No adoption without education, governance, and responsibility.
+```
+
+## Research Loop
+
+```text
+question
+  → search sources
+  → collect evidence
+  → evaluate trust
+  → synthesize options
+  → recommend decision
+  → link decision to evidence
+  → refresh when evidence changes
+```
+
+## Evaluation Loop
+
+```text
+benchmark
+  → run agent/model
+  → capture traces
+  → grade outputs
+  → calculate CLEAR metrics
+  → generate report
+  → compare alternatives
+  → preserve artifacts
+```
+
+## Quick Start
+
+```bash
+pip install -e .
+agent-research clear run benchmarks/clearbench_mini --agent echo --repeats 3 --output outputs/clearbench-mini-echo
+agent-research clear report outputs/clearbench-mini-echo
+```
+
+## UI Deployment
+
+The CLEARBench UI lives in `ui/` and is deployed with GitHub Pages using the repository workflow in `.github/workflows/pages.yml`.
+
+## Repository Boundary
+
+```text
+Agent-Research-Foundation
+  → open research, education, awareness, and research-backed evaluation verticals
+
+Agent-Trust
+  → provenance and trust scoring
+
+Agent-Eval
+  → shared scoring and evaluation methods
+
+Agent-Analytics
+  → adoption/performance signals
+
+Agent-Team
+  → uses research and evaluation to make better decisions
+```
