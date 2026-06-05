@@ -1,0 +1,76 @@
+{
+  "model": "ReactiveFluxAwareSurfaceSelection",
+  "version": "1.0.0",
+  "reaction": {
+    "id": "rxn_co_oxidation",
+    "equation": "CO* + O* -> CO2(g) + *",
+    "target_product": "CO2",
+    "side_products": []
+  },
+  "surface": {
+    "id": "surface_pt_111_clean",
+    "material": "Pt",
+    "facet": "111",
+    "defects": [],
+    "alloy": null,
+    "support": null,
+    "preparation_method": null
+  },
+  "conditions": {
+    "temperature_K": 500,
+    "pressure": {
+      "CO_bar": 0.1,
+      "O2_bar": 0.2
+    },
+    "coverage": {
+      "CO": 0.25,
+      "O": 0.25
+    },
+    "flow_rate": null,
+    "environment": "gas_phase"
+  },
+  "descriptors": {
+    "adsorption_energy_CO_eV": null,
+    "adsorption_energy_O_eV": null,
+    "activation_barrier_eV": null,
+    "reaction_free_energy_eV": null,
+    "surface_energy_eV": null,
+    "stability_score": null,
+    "poisoning_risk": null
+  },
+  "dynamics": {
+    "tst_rate_constant": null,
+    "reactive_flux_rate_constant": null,
+    "recrossing_factor": null,
+    "reaction_channels": [
+      "CO_oxidation",
+      "CO_desorption"
+    ],
+    "free_energy_surface_ref": null,
+    "uncertainty": null
+  },
+  "score": {
+    "activity": null,
+    "selectivity": null,
+    "stability": null,
+    "low_poisoning": null,
+    "low_recrossing_loss": null,
+    "manufacturability": null,
+    "cost": null,
+    "total": null
+  },
+  "decision": {
+    "status": "candidate",
+    "rank": null,
+    "reason": "Benchmark candidate surface for CO oxidation.",
+    "review_required": true
+  },
+  "provenance": {
+    "method": "DFT + Neural Network Potential + Metadynamics + Reactive Flux",
+    "dataset": null,
+    "code_version": null,
+    "model_version": "1.0.0",
+    "created_by": "AGenNext",
+    "created_at": "2026-06-05"
+  }
+}
